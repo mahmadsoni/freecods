@@ -1,0 +1,9 @@
+{
+  "name": "FreeCods Premium UI",
+  "short_name": "FreeCods",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#05060e",
+  "theme_color": "#06b6d4",
+  "orientation": "portrait"
+}
