@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyberpunk Premium Login - FreeCods</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Эффекти дурахши замина (Neon Aura) */
+        .neon-bg {
+            background: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #09090b 100%);
+        }
+        /* Эффекти шишагии премиум */
+        .glass-box {
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(6, 182, 212, 0.15);
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+        }
+        /* Анимацияи хатти сояи кнопка */
+        .neon-btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.3);
+        }
+        .neon-btn:hover {
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.6), 0 0 50px rgba(168, 85, 247, 0.4);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="neon-bg min-h-screen flex items-center justify-center p-4 antialiased selection:bg-cyan-500 selection:text-black">
+
+    <div class="relative w-full max-w-md">
+        
+        <div class="absolute -top-10 -left-10 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl"></div>
+
+        <div class="glass-box rounded-2xl p-8 relative overflow-hidden">
+            
+            <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-purple-500"></div>
+
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xl mb-3 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h2 class="text-2xl font-black tracking-wide text-white uppercase">Welcome Back</h2>
+                <p class="text-xs text-gray-400 mt-1">Access the secure cyber network</p>
+            </div>
+
+            <form onsubmit="event.preventDefault(); alert('Login Success! (Demo)');" class="space-y-6">
+                
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-cyan-400/80 uppercase tracking-wider block">Username or Email</label>
+                    <div class="relative flex items-center">
+                        <i class="fa-solid fa-user absolute left-4 text-gray-500 text-sm transition-colors group-focus-within:text-cyan-400"></i>
+                        <input type="text" required placeholder="soni_coder" 
+                            class="w-full bg-black/40 border border-slate-800 focus:border-cyan-500 rounded-xl py-3.5 pl-11 pr-4 text-sm text-white placeholder-gray-600 focus:outline-none transition-all duration-300 focus:shadow-[0_0_12px_rgba(6,182,212,0.15)]">
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="text-xs font-bold text-cyan-400/80 uppercase tracking-wider">Password</label>
+                        <a href="#" class="text-[11px] text-purple-400 hover:text-purple-300 transition-colors">Forgot?</a>
+                    </div>
+                    <div class="relative flex items-center">
+                        <i class="fa-solid fa-lock absolute left-4 text-gray-500 text-sm"></i>
+                        <input type="password" required placeholder="••••••••" 
+                            class="w-full bg-black/40 border border-slate-800 focus:border-purple-500 rounded-xl py-3.5 pl-11 pr-4 text-sm text-white placeholder-gray-600 focus:outline-none transition-all duration-300 focus:shadow-[0_0_12px_rgba(168,85,247,0.15)]">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-1">
+                    <label class="flex items-center gap-2 cursor-pointer group">
+                        <input type="checkbox" class="accent-cyan-500 h-4 w-4 rounded bg-black/50 border-slate-800">
+                        <span class="text-xs text-gray-400 group-hover:text-gray-300 transition-colors">Remember device</span>
+                    </label>
+                </div>
+
+                <button type="submit" 
+                    class="neon-btn w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-black font-black text-xs uppercase tracking-widest py-4 rounded-xl cursor-pointer">
+                    Authorize <i class="fa-solid fa-arrow-right ml-1 text-sm vertical-middle"></i>
+                </button>
+            </form>
+
+            <div class="text-center mt-8 pt-4 border-t border-slate-800/40">
+                <p class="text-xs text-gray-500">
+                    New to the grid? <a href="#" class="text-cyan-400 hover:underline font-semibold ml-1">Create account</a>
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

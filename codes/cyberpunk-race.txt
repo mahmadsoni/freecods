@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Neon Cyber-Race</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { 
+            background: #05060e; 
+            overflow: hidden; 
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+        .cyber-panel {
+            background: rgba(13, 14, 24, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.15), inset 0 0 15px rgba(6, 182, 212, 0.05);
+        }
+        #gameCanvas { 
+            background: linear-gradient(to bottom, #090a15 0%, #0d0e1b 50%, #05050a 100%);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.2);
+        }
+        .neon-glow-btn {
+            background: linear-gradient(90deg, #06b6d4, #a855f7);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+            transition: all 0.3s ease;
+        }
+        .neon-glow-btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 25px rgba(168, 85, 247, 0.6);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen text-white p-4">
+
+    <div class="w-full max-w-[340px] cyber-panel rounded-2xl p-4 mb-4 flex justify-between items-center animate-fade-in">
+        <div>
+            <h1 class="text-cyan-400 font-black text-sm tracking-widest uppercase flex items-center gap-2">
+                <i class="fa-solid fa-bolt text-purple-500 animate-pulse"></i> CYBER DRIVE
+            </h1>
+            <p class="text-[10px] text-slate-400 mt-0.5 font-mono">SPEED: <span id="speedVal" class="text-cyan-400 font-bold">120 km/h</span></p>
+        </div>
+        <div class="text-right">
+            <span class="text-[10px] text-slate-400 uppercase font-mono tracking-wider">SCORE</span>
+            <div id="scoreVal" class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 font-mono">000</div>
+        </div>
+    </div>
+
+    <div class="relative rounded-2xl overflow-hidden">
+        <canvas id="gameCanvas" width="340" height="460" class="rounded-2xl"></canvas>
+        
+        <div id="overlayScreen" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center p-6 text-center transition-all duration-300">
+            <div class="w-16 h-16 rounded-full border border-cyan-500/30 bg-cyan-950/40 flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(6,182,212,0.2)]">
+                <i id="overlayIcon" class="fa-solid fa-gamepad text-2xl text-cyan-400"></i>
+            </div>
+            <h2 id="overlayTitle" class="text-lg font-black tracking-widest text-white uppercase mb-1">NEON RACING</h2>
+            <p id="overlayDesc" class="text-xs text-slate-400 max-w-[240px] mb-6">Камеронро идора карда, аз мошинҳои дигар дурӣ ҷӯед!</p>
+            <button id="startBtn" class="neon-glow-btn text-black font-black text-xs uppercase tracking-wider py-3 px-8 rounded-xl cursor-pointer">
+                START RACE
+            </button>
+        </div>
+    </div>
+
+    <div class="w-full max-w-[340px] text-center mt-3">
+        <p class="text-[10px] text-slate-500 flex items-center justify-center gap-1">
+            <i class="fa-solid fa-mobile-screen text-xs text-slate-400"></i>
+            Барои телефон: Тарафи чап ё рости экранро ҷуқед.
+        </p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        
+        // Элементҳои UI
+        const scoreVal = document.getElementById("scoreVal");
+        const speedVal = document.getElementById("speedVal");
+        const overlayScreen = document.getElementById("overlayScreen");
+        const overlayTitle = document.getElementById("overlayTitle");
+        const overlayDesc = document.getElementById("overlayDesc");
+        const overlayIcon = document.getElementById("overlayIcon");
+        const startBtn = document.getElementById("startBtn");
+
+        let score = 0;
+        let gameSpeed = 5;
+        let isPlaying = false;
+        let roadOffset = 0;
+
+        // Мошини Бозигар (Стили суперкар бо эффектҳо)
+        const player = {
+            x: 145,
+            y: 360,
+            w: 48,
+            h: 75,
+            targetX: 145, // Барои ҳаракати ҳамвор (smooth interpolation)
+            color: "#06b6d4"
+        };
+        
+        // Мошини Душман
+        const enemy = {
+            x: 145,
+            y: -80,
+            w: 46,
+            h: 72,
+            speed: 4,
+            color: "#ec4899",
+            type: 0 // Барои сохтани рангҳои гуногуни мошинҳо
+        };
+
+        // Идоракунии клавиатура
+        let keys = {};
+        document.addEventListener("keydown", (e) => keys[e.code] = true);
+        document.addEventListener("keyup", (e) => keys[e.code] = false);
+
+        // Идоракунии телефон (Тарафи чап ва рост)
+        canvas.addEventListener("touchstart", (e) => {
+            if (!isPlaying) return;
+            const touchX = e.touches[0].clientX - canvas.getBoundingClientRect().left;
+            if (touchX < canvas.width / 2) {
+                player.targetX -= 55;
+            } else {
+                player.targetX += 55;
+            }
+        });
+
+        // Оғози бозӣ
+        startBtn.addEventListener("click", () => {
+            overlayScreen.classList.add("hidden");
+            resetGame();
+            isPlaying = true;
+        });
+
+        function resetGame() {
+            score = 0;
+            gameSpeed = 5;
+            player.x = 145;
+            player.targetX = 145;
+            enemy.y = -100;
+            enemy.x = getRandomLane();
+            enemy.speed = gameSpeed + 1;
+            scoreVal.innerText = "000";
+            speedVal.innerText = "120 km/h";
+        }
+
+        function getRandomLane() {
+            // Се хатти асосии роҳ (Чап, Миёна, Рост)
+            const lanes = [45, 145, 245];
+            return lanes[Math.floor(Math.random() * lanes.length)];
+        }
+
+        function triggerGameOver() {
+            isPlaying = false;
+            overlayScreen.classList.remove("hidden");
+            overlayTitle.innerText = "GAME OVER";
+            overlayTitle.className = "text-lg font-black tracking-widest text-rose-500 uppercase mb-1";
+            overlayDesc.innerHTML = `Шумо авария шудед!<br><span class="text-purple-400 font-bold">SCORE: ${score}</span>`;
+            overlayIcon.className = "fa-solid fa-skull text-2xl text-rose-500";
+            startBtn.innerText = "TRY AGAIN";
+        }
+
+        // Кашидани Мошини Реалистии Сарпӯши Киберпанкӣ
+        function drawCar(x, y, w, h, mainColor, isPlayer) {
+            ctx.save();
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = mainColor;
+
+            // Корпуси асосии мошин (Шакли аэродинамикӣ)
+            ctx.fillStyle = mainColor;
+            ctx.beginPath();
+            ctx.roundRect(x + 4, y + 5, w - 8, h - 10, 10);
+            ctx.fill();
+
+            // Спойлери ақиб
+            ctx.fillStyle = "#111424";
+            ctx.fillRect(x + 2, y + h - 8, w - 4, 5);
+            ctx.fillStyle = mainColor;
+            ctx.fillRect(x, y + h - 10, 5, 8);
+            ctx.fillRect(x + w - 5, y + h - 10, 5, 8);
+
+            // Оинаи пеш ва болои мошин (Кабина)
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+            ctx.beginPath();
+            ctx.roundRect(x + 10, y + 25, w - 20, 25, 4);
+            ctx.fill();
+            
+            // Шишаи пеш (Эффекти неон)
+            ctx.fillStyle = isPlayer ? "#22d3ee" : "#f472b6";
+            ctx.fillRect(x + 12, y + 28, w - 24, 5);
+
+            // Бампери пеш
+            ctx.fillStyle = "#1e293b";
+            ctx.fillRect(x + 8, y, w - 16, 6);
+
+            // Чароғҳои пеш (Фаро)
+            ctx.fillStyle = "#ffffff";
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#ffffff";
+            ctx.fillRect(x + 6, y + 2, 6, 3);
+            ctx.fillRect(x + w - 12, y + 2, 6, 3);
+
+            // Чароғҳои ақиб (Стоп-сигнал)
+            ctx.fillStyle = "#ef4444";
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#ef4444";
+            ctx.fillRect(x + 5, y + h - 4, 8, 3);
+            ctx.fillRect(x + w - 13, y + h - 4, 8, 3);
+
+            // Чархҳо (4 дона)
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = "#020205";
+            ctx.fillRect(x - 1, y + 12, 4, 14);
+            ctx.fillRect(x + w - 3, y + 12, 4, 14);
+            ctx.fillRect(x - 1, y + h - 24, 4, 14);
+            ctx.fillRect(x + w - 3, y + h - 24, 4, 14);
+
+            ctx.restore();
+        }
+
+        function update() {
+            if (!isPlaying) return;
+
+            // Идоракунӣ бо клавиатура
+            if (keys["ArrowLeft"]) player.targetX -= 4.5;
+            if (keys["ArrowRight"]) player.targetX += 4.5;
+
+            // Ҳаракати ҳамвор (Lerp) ба сӯи мақсад
+            player.x += (player.targetX - player.x) * 0.25;
+
+            // Маҳдудияти ҳаракат дар ҳудуди роҳ
+            if (player.x < 30) { player.x = 30; player.targetX = 30; }
+            if (player.x > canvas.width - player.w - 30) { player.x = canvas.width - player.w - 30; player.targetX = canvas.width - player.w - 30; }
+
+            // Ҳаракати роҳ ва хатҳо (Эффекти суръат)
+            roadOffset += gameSpeed;
+            if (roadOffset > 40) roadOffset = 0;
+
+            // Ҳаракати мошини душман
+            enemy.y += enemy.speed;
+
+            // Агар душман аз экран гузарад (Очко гирифтан)
+            if (enemy.y > canvas.height) {
+                enemy.y = -90;
+                enemy.x = getRandomLane();
+                score++;
+                
+                // Формат кардани счёт ба намуди 001, 012
+                scoreVal.innerText = String(score).padStart(3, '0');
+                
+                // Зиёд кардани суръати умумии бозӣ
+                if (score % 4 === 0 && gameSpeed < 15) {
+                    gameSpeed += 0.8;
+                    speedVal.innerText = Math.floor(120 + (gameSpeed * 15)) + " km/h";
+                }
+                enemy.speed = gameSpeed + 1.5 + Math.random() * 2;
+                
+                // Иваз кардани ранги мошини навбатии душман
+                enemy.type = Math.floor(Math.random() * 3);
+                enemy.color = enemy.type === 0 ? "#a855f7" : (enemy.type === 1 ? "#3b82f6" : "#f43f5e");
+            }
+
+            // Алгоритми дақиқи бархӯрд (Collision Detection)
+            const paddingX = 4; // Барои дақиқ шудани ламс
+            const paddingY = 6;
+            if (player.x + paddingX < enemy.x + enemy.w - paddingX &&
+                player.x + player.w - paddingX > enemy.x + paddingX &&
+                player.y + paddingY < enemy.y + enemy.h - paddingY &&
+                player.y + player.h - paddingY > enemy.y + paddingY) {
+                triggerGameOver();
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Асфалти роҳ
+            ctx.fillStyle = "#070812";
+            ctx.fillRect(25, 0, canvas.width - 50, canvas.height);
+
+            // 2. Сарҳадҳои роҳ (Неони Сабз/Сиан)
+            ctx.strokeStyle = "rgba(6, 182, 212, 0.4)";
+            ctx.lineWidth = 3;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#06b6d4";
+            ctx.beginPath();
+            ctx.moveTo(25, 0); ctx.lineTo(25, canvas.height);
+            ctx.moveTo(canvas.width - 25, 0); ctx.lineTo(canvas.width - 25, canvas.height);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // 3. Хатҳои марказии ҳаракат (Эффекти аниматсияи ҳаракати роҳ)
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+            ctx.lineWidth = 2;
+            ctx.setLineDash([25, 20]);
+            
+            // Хатти якум
+            ctx.beginPath();
+            ctx.moveTo(123, roadOffset - 40);
+            ctx.lineTo(123, canvas.height + 40);
+            ctx.stroke();
+
+            // Хатти дуюм
+            ctx.beginPath();
+            ctx.moveTo(216, roadOffset - 40);
+            ctx.lineTo(216, canvas.height + 40);
+            ctx.stroke();
+            
+            ctx.setLineDash([]); // Бекор кардани пунктир барои объектҳои дигар
+
+            // 4. Кашидани объектҳо агар бозӣ давом дошта бошад
+            if (isPlaying || overlayScreen.classList.contains("hidden")) {
+                // Расми мошини душман
+                drawCar(enemy.x, enemy.y, enemy.w, enemy.h, enemy.color, false);
+                
+                // Расми мошини бозигар
+                drawCar(player.x, player.y, player.w, player.h, player.color, true);
+            }
+        }
+
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    </script>
+</body>
+</html>

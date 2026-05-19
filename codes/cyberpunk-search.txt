@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyberpunk Animated Search - FreeCods</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .neon-bg {
+            background: #06070d;
+        }
+        /* Контейнери аниматсионии ҷустуҷӯ */
+        .search-wrapper {
+            width: 50px;
+            height: 50px;
+            background: rgba(18, 20, 32, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.1);
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.4s, box-shadow 0.4s;
+        }
+        /* Ҳолати фаъол (вақте кушода мешавад) */
+        .search-wrapper.active {
+            width: 320px;
+            border-color: #a855f7;
+            box-shadow: 0 0 25px rgba(168, 85, 247, 0.4);
+        }
+        /* Танзими намоиши инпут */
+        .search-input {
+            width: 0;
+            opacity: 0;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+        }
+        .search-wrapper.active .search-input {
+            width: 100%;
+            opacity: 1;
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+    </style>
+</head>
+<body class="neon-bg min-h-screen flex flex-col items-center justify-center p-6 antialiased">
+
+    <div class="flex flex-col items-center space-y-6">
+        
+        <p class="text-[11px] font-mono tracking-[0.2em] text-cyan-400 uppercase">Click Icon to Expand</p>
+
+        <div id="searchWrapper" class="search-wrapper relative flex items-center rounded-full overflow-hidden cursor-pointer">
+            
+            <input type="text" id="searchInput" placeholder="Кодҳоро кобед..." 
+                class="search-input bg-transparent py-3 text-white placeholder-slate-600 text-sm focus:outline-none font-sans">
+            
+            <div id="searchBtn" class="w-[48px] h-[48px] flex items-center justify-center text-cyan-400 hover:text-purple-400 transition-colors duration-300 shrink-0">
+                <i class="fa-solid fa-magnifying-glass text-lg"></i>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script>
+        const searchWrapper = document.getElementById('searchWrapper');
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+
+        // Вақте значокро пахш мекунад
+        searchBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Барои он ки клик ба контейнер таъсир накунад
+            searchWrapper.classList.toggle('active');
+            
+            if (searchWrapper.classList.contains('active')) {
+                searchInput.focus();
+            } else {
+                searchInput.value = '';
+            }
+        });
+
+        // Агар берун аз ҷустуҷӯ клик шавад, онро мепӯшонад
+        document.addEventListener('click', (e) => {
+            if (!searchWrapper.contains(e.target)) {
+                searchWrapper.classList.remove('active');
+                searchInput.value = '';
+            }
+        });
+    </script>
+
+</body>
+</html>
